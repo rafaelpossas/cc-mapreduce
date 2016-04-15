@@ -4,9 +4,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
-
-/**
- * Created by rafaelpossas on 14/04/16.
+/*
+ * Reads the place.txt file and creates a intermediate file for join
+ *
+ *  Input
+ *  place-id  woeid  latitude  longitude  place-name  place-type-id  place-url
+ *
+ *  Output
+ *  place-id  place-type-id country place-url
+ *
+ *
  */
 public class PlaceCountryMapper extends Mapper<Object, Text, Text, Text>{
     private Text placeId= new Text(), placeName = new Text();

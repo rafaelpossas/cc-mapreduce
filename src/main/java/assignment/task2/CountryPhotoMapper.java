@@ -7,9 +7,17 @@ import org.apache.hadoop.mapreduce.Mapper;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-
-/**
- * Created by rafaelpossas on 14/04/16.
+/*
+ * Uses the file in distributed cache created by PlaceCountryMapper and joins with the Photos files
+ *
+ * Distributed Cache File Structure:
+ * place-id  place-type-id country place-url
+ *
+ * Photos File Structure
+ * photo-id owner tags date-taken place-id accuracy
+ *
+ * Output
+ * country owner locality
  */
 public class CountryPhotoMapper extends Mapper<Object, Text, Text, Text> {
     private Map<String, String> placeMap = new HashMap<String, String>();
@@ -54,13 +62,26 @@ public class CountryPhotoMapper extends Mapper<Object, Text, Text, Text> {
             String[] location = placeMap.get(dataArray[4]).split("\t");
             String placeType = location[0];
             String country = location[1];
-            String url = location[2];
+            String[] localities = location[2].split("/");
+            String locality;
             if(placeType.equals("7") || placeType.equals("22")){
-                keyOut.set(country);
-                //keyOut.set(dataArray[4]);
-                valueOut.set(dataArray[1]+"\t"+dataArray[2]);
-                context.write(keyOut,valueOut);
+                try{
+                    if(localities.length >=4){
+                        locality = localities[3].replace("+","").toLowerCase();
+                    }else{
+                        locality = localities[2].replace("+","").toLowerCase();
+                    }
+                    if(placeType.equals("7") || placeType.equals("22")){
+                        keyOut.set(country);
+                        valueOut.set(dataArray[1]+"\t"+locality);
+                        context.write(keyOut,valueOut);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
+
+
 
         }
     }

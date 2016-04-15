@@ -45,9 +45,10 @@ public class CountryTop10LocalityDriver {
         joinJob.setMapOutputValueClass(Text.class);
         joinJob.setOutputKeyClass(Text.class);
         joinJob.setOutputValueClass(Text.class);
-        //joinJob.setReducerClass(PlaceTagReducer.class);
         MultipleInputs.addInputPath(joinJob, new Path(otherArgs[1]),
                 TextInputFormat.class, CountryPhotoMapper.class);
+        joinJob.setCombinerClass(CountryPhotoCombiner.class);
+        joinJob.setReducerClass(CountryLocalityReducer.class);
         TextOutputFormat.setOutputPath(joinJob, new Path(otherArgs[2]));
         joinJob.waitForCompletion(true);
         // remove the temporary path

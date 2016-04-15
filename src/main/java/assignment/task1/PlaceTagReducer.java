@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
-    private Map<String,Integer> countryTable = new HashMap<String, Integer>();
+    private Map<String,Integer> localityTable = new HashMap<String, Integer>();
 
 
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {;
@@ -39,16 +39,17 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
 
             locality+= placeTmp+" ";
         }
-        countryTable.put(key.toString()+"\t"+result.substring(0,result.length()-1)+"\t"+year.substring(0,year.length()-1)
+        localityTable.put(key.toString()+"\t"+result.substring(0,result.length()-1)+"\t"+year.substring(0,year.length()-1)
                 +"\t"+locality.substring(0,locality.length()-1),count);
 
     }
     @Override
     protected void cleanup(Context context) throws IOException,InterruptedException{
-        Map<String, Integer> sortedMap = sortByValues(countryTable);
-        Map<String, Integer> tagTable = new HashMap<String, Integer>();
+        Map<String, Integer> sortedMap = sortByValues(localityTable);
+        Map<String, Integer> tagTable;
         int counter = 0;
         for (String key : sortedMap.keySet()) {
+            tagTable = new HashMap<String, Integer>();
             if (counter++ == 50) {
                 break;
             }

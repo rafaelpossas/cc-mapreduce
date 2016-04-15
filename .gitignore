@@ -4,3 +4,6 @@ out/
 place-type-filter/
 log.txt
 target/
+.idea/workspace.xml
+mapreduce-out/
+*.iml
