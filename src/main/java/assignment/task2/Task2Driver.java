@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class CountryTop10LocalityDriver {
+public class Task2Driver {
     public static void main(String[] args) throws Exception {
 
         Configuration conf = new Configuration();
@@ -25,7 +25,7 @@ public class CountryTop10LocalityDriver {
 
         Job placeFilterJob = Job.getInstance(conf, "Place TypeMapper");
         placeFilterJob.setNumReduceTasks(0);
-        placeFilterJob.setJarByClass(CountryTop10LocalityDriver.class);
+        placeFilterJob.setJarByClass(Task2Driver.class);
         placeFilterJob.setMapperClass(PlaceCountryMapper.class);
         placeFilterJob.setOutputKeyClass(Text.class);
         placeFilterJob.setOutputValueClass(Text.class);
@@ -36,8 +36,7 @@ public class CountryTop10LocalityDriver {
 
         Job joinJob = Job.getInstance(conf, "Replication Join");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
-        joinJob.setJarByClass(CountryTop10LocalityDriver.class);
-        joinJob.setNumReduceTasks(5);
+        joinJob.setJarByClass(Task2Driver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
         joinJob.setOutputKeyClass(Text.class);
