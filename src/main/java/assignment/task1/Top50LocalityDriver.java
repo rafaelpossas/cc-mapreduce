@@ -36,7 +36,6 @@ public class Top50LocalityDriver {
 
         Job joinJob = Job.getInstance(conf, "Replication Join");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
-        joinJob.setNumReduceTasks(5);
         joinJob.setJarByClass(Top50LocalityDriver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
