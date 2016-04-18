@@ -23,11 +23,14 @@ public class PlaceCountryMapper extends Mapper<Object, Text, Text, Text>{
         if (dataArray.length < 7){ // a not complete record with all data
             return; // don't emit anything
         }
-        String[] location = dataArray[6].substring(1).split("/");
-        String country = location[0].replace("+","").toLowerCase().trim();
-        placeId.set(dataArray[0]);
-        placeName.set(dataArray[5]+"\t"+country+"\t"+dataArray[6]);
-        context.write(placeId, placeName);
+        if(dataArray[0].equals("7") || dataArray[0].equals("22")){
+            String[] location = dataArray[6].substring(1).split("/");
+            String country = location[0];
+            placeId.set(dataArray[0]);
+            placeName.set(dataArray[5]+"\t"+country+"\t"+dataArray[6]);
+            context.write(placeId, placeName);
+        }
+
 
 
     }

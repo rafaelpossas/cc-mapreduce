@@ -1,9 +1,5 @@
 package assignment.task2;
 
-import assignment.task1.PlaceTagMapper;
-import assignment.task1.PlaceTagReducer;
-import assignment.task1.PlaceTypeMapper;
-import assignment.task1.Top50LocalityDriver;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -41,6 +37,7 @@ public class CountryTop10LocalityDriver {
         Job joinJob = Job.getInstance(conf, "Replication Join");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
         joinJob.setJarByClass(CountryTop10LocalityDriver.class);
+        joinJob.setNumReduceTasks(5);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
         joinJob.setOutputKeyClass(Text.class);

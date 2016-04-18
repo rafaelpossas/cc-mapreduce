@@ -2,54 +2,93 @@ package assignment.task2;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import utils.Utils;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by rafaelpossas on 4/15/16.
  */
-public class CountryLocalityReducer extends Reducer<Text,Text,Text,Text> {
+public class CountryLocalityReducer extends Reducer<Text, Text, Text, Text> {
 
-    private Map<String,HashMap<String,Integer>> countryTable = new HashMap<String, HashMap<String,Integer>>();
+    private Map<String, Map<String, String>> countryLocalityUrl = new HashMap<String, Map<String, String>>();
+    private Map<String, Map<String, Integer>> countryLocalityCount = new HashMap<String, Map<String, Integer>>();
 
-    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException{
-        HashMap<String,Integer> localityMap = countryTable.get(key.toString());
-        try{
-            for (Text value: values){
-                String currentLocality = value.toString().split(";")[1];
-                System.out.println(key.toString()+"\t"+value.toString()+"\n");
-                if(localityMap == null){
-                    localityMap = new HashMap<String, Integer>();
-                    localityMap.put(currentLocality,1);
-                    countryTable.put(key.toString(),localityMap);
-                }else{
-                    if(localityMap.get(currentLocality)== null){
-                        localityMap.put(currentLocality.toString(),1);
-                    }else{
-                        int currentCount = localityMap.get(currentLocality);
-                        localityMap.put(currentLocality,++currentCount);
+    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        Map<String, String> localityURL = null;
+        Map<String, Integer> localityCount = null;
+        try {
+            for (Text value : values) {
+                String url = value.toString().split(";")[1];
+                String currentLocality = Utils.getLocality(url);
+                String currentNeighbourhood = Utils.getNeighbourhood(url);
+                if (localityURL == null) {
+                    localityURL = new HashMap<String, String>();
+                    localityCount = new HashMap<String, Integer>();
+                    localityURL.put(currentLocality, currentNeighbourhood);
+                    localityCount.put(currentLocality, 1);
+                    countryLocalityUrl.put(key.toString(), localityURL);
+                    countryLocalityCount.put(key.toString(), localityCount);
+
+                } else {
+                    if (localityURL.get(currentLocality) == null) {
+                        localityURL.put(currentLocality.toString(), currentNeighbourhood);
+                        localityCount.put(currentLocality.toString(), 1);
+
+                    } else {
+                        String neighbourhoods = localityURL.get(currentLocality);
+                        Integer totalPhotos = localityCount.get(currentLocality);
+                        localityURL.put(currentLocality, neighbourhoods + " " + currentNeighbourhood);
+                        localityCount.put(currentLocality, ++totalPhotos);
                     }
 
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
+        }
+        for (String country : countryLocalityCount.keySet()) {
+            Map<String, Integer> orderedTapLocalityCount = Utils.sortByValues(countryLocalityCount.get(country));
+            countryLocalityCount.put(country, orderedTapLocalityCount);
         }
 
 
     }
+
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        for (String key: countryTable.keySet()){
-            System.out.println("\n"+key+"\n");
-            HashMap<String,Integer> localityMap = countryTable.get(key.toString());
+        countryLocalityCount = new TreeMap<String, Map<String, Integer>>(countryLocalityCount);
+        for (String key : countryLocalityCount.keySet()) {
+            int top10 = 0;
+            Map<String, String> localityURL = countryLocalityUrl.get(key.toString());
+            Map<String, Integer> localityCount = countryLocalityCount.get(key.toString());
+            Map<String, Integer> neighbourhoodCountMap;
             String result = "";
-            for (String localKey: localityMap.keySet()){
-                result += localKey+":"+localityMap.get(localKey)+" ";
+            for (String localKey : localityCount.keySet()) {
+                if (top10 < 10) {
+                    int totalPhotos = localityCount.get(localKey);
+                    String[] neighbourhoodCount = Utils.countNeighbourhood(localityURL.get(localKey)).split(" ");
+                    neighbourhoodCountMap = new HashMap<String, Integer>();
+                    for (String count : neighbourhoodCount) {
+                        if (!count.equals("")) {
+                            neighbourhoodCountMap.put(count.split(":")[0], Integer.parseInt(count.split(":")[1]));
+                        }
+                    }
+                    Map.Entry<String, Integer> topNeighbourhood = Utils.getMaxEntry(neighbourhoodCountMap);
+                    if (topNeighbourhood != null) {
+                        result += "{" + localKey + ":" + totalPhotos + " " + topNeighbourhood.getKey() + ": " + topNeighbourhood.getValue() + "} ";
+                    } else {
+                        result += "{" + localKey + ":" + totalPhotos + "} ";
+                    }
+                }
+                top10++;
             }
-            context.write(new Text(key),new Text(result));
+            context.write(new Text(key), new Text(result));
+
         }
+
     }
 }

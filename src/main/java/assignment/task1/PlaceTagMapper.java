@@ -7,7 +7,18 @@ import org.apache.hadoop.mapreduce.Mapper;
 import java.io.*;
 import java.util.*;
 
-
+/*
+ * Uses the file in distributed cache created by PlaceTypeMapper and joins with the Photos files
+ *
+ * Distributed Cache File Structure:
+ * place-id  locality country place-url
+ *
+ * Photos File Structure
+ * photo-id owner tags date-taken place-id accuracy
+ *
+ * Output
+ * Locality tags \t date \t URL
+ */
 public class PlaceTagMapper extends Mapper<Object, Text, Text, Text> {
 
     private Map<String, String> placeMap = new HashMap<String, String>();
@@ -27,9 +38,9 @@ public class PlaceTagMapper extends Mapper<Object, Text, Text, Text> {
             String line;
             try {
                 placeReader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
-                //String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
-                //FileInputStream fis = new FileInputStream(filename);
-                //placeReader = new BufferedReader(new InputStreamReader(fis));
+//                String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
+//                FileInputStream fis = new FileInputStream(filename);
+//                placeReader = new BufferedReader(new InputStreamReader(fis));
                 while ((line = placeReader.readLine()) != null) {
                     putPlaceTable(line);
                 }

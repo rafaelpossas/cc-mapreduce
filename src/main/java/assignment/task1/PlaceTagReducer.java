@@ -12,16 +12,16 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
     private Map<String,Integer> localityTable = new HashMap<String, Integer>();
 
 
-    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {;
-        int count = 0;
-        String result = "";
-        String year = "";
-        String locality = "";
+    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        int totalPhotos = 0;
+        String tags = "";
+        String years = "";
+        String places = "";
         List<String> placesList = new ArrayList<String>();
 
         for (Text currentValue:values){
             String[] tagDateArray = currentValue.toString().split("\t");
-            result += tagDateArray[0]+" ";
+            tags += tagDateArray[0]+" ";
             String pictureYear = tagDateArray[1].substring(0,4);
             String[] placesArray = tagDateArray[2].substring(1).split("/");
             int placesLength = placesArray.length >3? 3: placesArray.length;
@@ -31,21 +31,22 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
                     placesList.add(placeTmp);
                 }
             }
-            if(year.indexOf(pictureYear) == -1)
-                year += pictureYear+" ";
-            count++;
+            if(years.indexOf(pictureYear) == -1)
+                years += pictureYear+" ";
+            totalPhotos++;
         }
         for (String placeTmp: placesList){
 
-            locality+= placeTmp+" ";
+            places+= placeTmp+" ";
         }
-        localityTable.put(key.toString()+"\t"+result.substring(0,result.length()-1)+"\t"+year.substring(0,year.length()-1)
-                +"\t"+locality.substring(0,locality.length()-1),count);
+        localityTable.put(key.toString()+"\t"+tags+"\t"+years
+                +"\t"+places,totalPhotos);
+
 
     }
     @Override
     protected void cleanup(Context context) throws IOException,InterruptedException{
-        Map<String, Integer> sortedMap = sortByValues(localityTable);
+        Map<String, Integer> sortedMap = Utils.sortByValues(localityTable);
         Map<String, Integer> tagTable;
         int counter = 0;
         for (String key : sortedMap.keySet()) {
@@ -70,7 +71,7 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
                     }
                 }
             }
-            Map<String, Integer> sortedTags = PlaceTagReducer.sortByValues(tagTable);
+            Map<String, Integer> sortedTags = Utils.sortByValues(tagTable);
             int count = 0;
             for(String current_key: sortedTags.keySet()){
                 if(count < 10){
@@ -84,24 +85,5 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
             context.write(new Text(dataArray[0]+"\t"+sortedMap.get(key)),new Text(result));
         }
     }
-    public static <K extends Comparable, V extends Comparable> Map<K, V> sortByValues(Map<K, V> map) {
-        List<Map.Entry<K, V>> entries = new LinkedList<Map.Entry<K, V>>(map.entrySet());
 
-        Collections.sort(entries, new Comparator<Map.Entry<K, V>>() {
-
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return o2.getValue().compareTo(o1.getValue());
-            }
-        });
-
-        //LinkedHashMap will keep the keys in the order they are inserted
-        //which is currently sorted on natural ordering
-        Map<K, V> sortedMap = new LinkedHashMap<K, V>();
-
-        for (Map.Entry<K, V> entry : entries) {
-            sortedMap.put(entry.getKey(), entry.getValue());
-        }
-
-        return sortedMap;
-    }
 }

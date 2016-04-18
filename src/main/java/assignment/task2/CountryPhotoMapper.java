@@ -36,10 +36,10 @@ public class CountryPhotoMapper extends Mapper<Object, Text, Text, Text> {
         if (cacheFiles != null && cacheFiles.length > 0) {
             String line;
             try {
-                //placeReader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
-                String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
-                FileInputStream fis = new FileInputStream(filename);
-                placeReader = new BufferedReader(new InputStreamReader(fis));
+                placeReader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
+//                String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
+//                FileInputStream fis = new FileInputStream(filename);
+//                placeReader = new BufferedReader(new InputStreamReader(fis));
                 while ((line = placeReader.readLine()) != null) {
                     putPlaceTable(line);
                 }
@@ -62,23 +62,10 @@ public class CountryPhotoMapper extends Mapper<Object, Text, Text, Text> {
             String[] location = placeMap.get(dataArray[4]).split("\t");
             String placeType = location[0];
             String country = location[1];
-            String[] localities = location[2].split("/");
-            String locality;
             if(placeType.equals("7") || placeType.equals("22")){
-                try{
-                    if(localities.length >=4){
-                        locality = localities[3].replace("+","").toLowerCase();
-                    }else{
-                        locality = localities[2].replace("+","").toLowerCase();
-                    }
-                    if(placeType.equals("7") || placeType.equals("22")){
-                        keyOut.set(country);
-                        valueOut.set(dataArray[1]+"\t"+locality);
-                        context.write(keyOut,valueOut);
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+                keyOut.set(country);
+                valueOut.set(dataArray[1]+"\t"+location[2]);
+                context.write(keyOut,valueOut);
             }
 
 

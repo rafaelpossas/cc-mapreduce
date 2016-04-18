@@ -2,6 +2,7 @@ package assignment.task1;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import utils.Utils;
 
 import java.io.IOException;
 
@@ -18,13 +19,7 @@ public class PlaceTypeMapper extends Mapper<Object, Text, Text, Text> {
         }
         String placeType = dataArray[5];
         if (placeType.equals("7") || placeType.equals("22")){
-            String[] localities = dataArray[6].split("/");
-            String locality;
-            if(localities.length >=4){
-                locality = localities[3].replace("+","").toLowerCase();
-            }else{
-                locality = localities[2].replace("+","").toLowerCase();
-            }
+            String locality = Utils.getLocality(dataArray[6]);
             placeId.set(dataArray[0]);
             placeName.set(locality+"\t"+dataArray[6]);
             context.write(placeId, placeName);
