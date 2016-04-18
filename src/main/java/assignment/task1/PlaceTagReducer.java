@@ -13,17 +13,19 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
 
 
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-
+        String tags = "";
+        String years = "";
+        String places = "";
+        int totalPhotos = 0;
         for(Text currentValue: values){
             String[] valueArray = currentValue.toString().split("\t");
-            String tags = valueArray[0];
-            String years = valueArray[1];
-            String places = valueArray[2];
-            int totalPhotos = Integer.parseInt(valueArray[3]);
-
-            localityTable.put(key.toString()+"\t"+tags+"\t"+years
-                    +"\t"+places,totalPhotos);
+            tags = valueArray[0];
+            years = valueArray[1];
+            places = valueArray[2];
+            totalPhotos = Integer.parseInt(valueArray[3]);
         }
+        localityTable.put(key.toString()+"\t"+tags+"\t"+years
+                +"\t"+places,totalPhotos);
 
 
 
