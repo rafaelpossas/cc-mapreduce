@@ -34,15 +34,15 @@ public class Top50LocalityDriver {
         placeFilterJob.waitForCompletion(true);
 
 
-        Job joinJob = Job.getInstance(conf, "PlaceTagReducer");
+        Job joinJob = Job.getInstance(conf, "Replication Join");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
+        joinJob.setNumReduceTasks(5);
         joinJob.setJarByClass(Top50LocalityDriver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
         joinJob.setOutputKeyClass(Text.class);
         joinJob.setOutputValueClass(Text.class);
         joinJob.setReducerClass(PlaceTagReducer.class);
-        joinJob.setCombinerClass(PlaceTagCombiner.class);
         MultipleInputs.addInputPath(joinJob, new Path(otherArgs[1]),
                 TextInputFormat.class, PlaceTagMapper.class);
         TextOutputFormat.setOutputPath(joinJob, new Path(otherArgs[2]));

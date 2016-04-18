@@ -13,20 +13,34 @@ public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
 
 
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        int totalPhotos = 0;
         String tags = "";
         String years = "";
         String places = "";
-        int totalPhotos = 0;
-        for(Text currentValue: values){
-            String[] valueArray = currentValue.toString().split("\t");
-            tags = valueArray[0];
-            years = valueArray[1];
-            places = valueArray[2];
-            totalPhotos = Integer.parseInt(valueArray[3]);
+        List<String> placesList = new ArrayList<String>();
+
+        for (Text currentValue:values){
+            String[] tagDateArray = currentValue.toString().split("\t");
+            tags += tagDateArray[0]+" ";
+            String pictureYear = tagDateArray[1].substring(0,4);
+            String[] placesArray = tagDateArray[2].substring(1).split("/");
+            int placesLength = placesArray.length >3? 3: placesArray.length;
+            for (int i = 0; i<placesLength ; i++){
+                String placeTmp = placesArray[i].replace("+","").toLowerCase().trim();
+                if(!Utils.contains(placesList,placeTmp)){
+                    placesList.add(placeTmp);
+                }
+            }
+            if(years.indexOf(pictureYear) == -1)
+                years += pictureYear+" ";
+            totalPhotos++;
+        }
+        for (String placeTmp: placesList){
+
+            places+= placeTmp+" ";
         }
         localityTable.put(key.toString()+"\t"+tags+"\t"+years
                 +"\t"+places,totalPhotos);
-
 
 
     }
