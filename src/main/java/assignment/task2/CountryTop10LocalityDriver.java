@@ -34,7 +34,7 @@ public class CountryTop10LocalityDriver {
         placeFilterJob.waitForCompletion(true);
 
 
-        Job joinJob = Job.getInstance(conf, "Replication Join");
+        Job joinJob = Job.getInstance(conf, "CountryPhotoReducer");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
         joinJob.setJarByClass(CountryTop10LocalityDriver.class);
         joinJob.setMapOutputKeyClass(Text.class);
