@@ -23,7 +23,7 @@ public class Task2Driver {
 
         Path tmpFilterOut = new Path("place-type-filter"); // a temporary output path for the first job
 
-        Job placeFilterJob = Job.getInstance(conf, "Place TypeMapper");
+        Job placeFilterJob = Job.getInstance(conf,"Task 2 - Place Mapper");
         placeFilterJob.setNumReduceTasks(0);
         placeFilterJob.setJarByClass(Task2Driver.class);
         placeFilterJob.setMapperClass(PlaceCountryMapper.class);
@@ -34,7 +34,7 @@ public class Task2Driver {
         placeFilterJob.waitForCompletion(true);
 
 
-        Job joinJob = Job.getInstance(conf, "Replication Join");
+        Job joinJob = Job.getInstance(conf, "Task 2 - Country Reducer");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
         joinJob.setJarByClass(Task2Driver.class);
         joinJob.setMapOutputKeyClass(Text.class);

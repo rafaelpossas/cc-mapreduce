@@ -23,7 +23,7 @@ public class Task1Driver {
 
         Path tmpFilterOut = new Path("place-type-filter"); // a temporary output path for the first job
 
-        Job placeFilterJob = Job.getInstance(conf, "Place TypeMapper");
+        Job placeFilterJob = Job.getInstance(conf, "Task 1 Place Mapper");
         placeFilterJob.setNumReduceTasks(0);
         placeFilterJob.setJarByClass(Task1Driver.class);
         placeFilterJob.setMapperClass(PlaceTypeMapper.class);
@@ -34,8 +34,9 @@ public class Task1Driver {
         placeFilterJob.waitForCompletion(true);
 
 
-        Job joinJob = Job.getInstance(conf, "Replication Join");
+        Job joinJob = Job.getInstance(conf, "Task1 - Place/Tag Map-Reduce");
         joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
+        joinJob.setNumReduceTasks(10);
         joinJob.setJarByClass(Task1Driver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
