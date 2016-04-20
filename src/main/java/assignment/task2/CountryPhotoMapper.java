@@ -37,16 +37,20 @@ public class CountryPhotoMapper extends Mapper<Object, Text, Text, Text> {
             String line;
             try {
                 placeReader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
-//                String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
-//                FileInputStream fis = new FileInputStream(filename);
-//                placeReader = new BufferedReader(new InputStreamReader(fis));
-                while ((line = placeReader.readLine()) != null) {
-                    putPlaceTable(line);
+            } catch (Exception e){
+                if(placeReader == null){
+                    String filename = System.getProperty("user.dir")+"/tmp/places/part-m-00000";
+                    FileInputStream fis = new FileInputStream(filename);
+                    placeReader = new BufferedReader(new InputStreamReader(fis));
                 }
-            }
-            finally {
-                if(placeReader!=null)
+            } finally {
+                if(placeReader!=null){
+                    while ((line = placeReader.readLine()) != null) {
+                        putPlaceTable(line);
+                    }
                     placeReader.close();
+                }
+
             }
         }
 

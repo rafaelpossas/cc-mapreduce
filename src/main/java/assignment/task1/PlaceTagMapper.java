@@ -1,5 +1,6 @@
 package assignment.task1;
 
+import labs.reducesidejoin.TextIntPair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -22,7 +23,8 @@ import java.util.*;
 public class PlaceTagMapper extends Mapper<Object, Text, Text, Text> {
 
     private Map<String, String> placeMap = new HashMap<String, String>();
-    private Text keyOut = new Text(), valueOut = new Text();
+    private Text keyOut;
+    private Text valueOut;
     private BufferedReader placeReader;
 
     public void putPlaceTable(String line){
@@ -38,16 +40,22 @@ public class PlaceTagMapper extends Mapper<Object, Text, Text, Text> {
             String line;
             try {
                 placeReader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
-//                String filename = System.getProperty("user.dir")+"/place-type-filter/part-m-00000";
-//                FileInputStream fis = new FileInputStream(filename);
-//                placeReader = new BufferedReader(new InputStreamReader(fis));
-                while ((line = placeReader.readLine()) != null) {
-                    putPlaceTable(line);
+
+            } catch(Exception e){
+                if(placeReader == null){
+                    String filename = System.getProperty("user.dir")+"/tmp/places/part-m-00000";
+                    FileInputStream fis = new FileInputStream(filename);
+                    placeReader = new BufferedReader(new InputStreamReader(fis));
                 }
-            }
-            finally {
-                if(placeReader!=null)
+
+            } finally {
+                if(placeReader!=null){
+                    while ((line = placeReader.readLine()) != null) {
+                        putPlaceTable(line);
+                    }
                     placeReader.close();
+                }
+
             }
         }
 
@@ -63,9 +71,9 @@ public class PlaceTagMapper extends Mapper<Object, Text, Text, Text> {
             String[] location = placeMap.get(dataArray[4]).split("\t");
             String locality = location[0];
             String places = location[1];
-            keyOut.set(locality);
+            keyOut = new Text(locality);
             //keyOut.set(dataArray[4]);
-            valueOut.set(dataArray[2]+"\t"+dataArray[3]+"\t"+places);
+            valueOut = new Text(dataArray[2]+"\t"+dataArray[3]+"\t"+places);
             context.write(keyOut,valueOut);
         }
 

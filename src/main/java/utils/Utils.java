@@ -4,8 +4,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.util.ListenerList;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -86,5 +91,20 @@ public class Utils {
             }
         }
         return maxEntry;
+    }
+    public static boolean getMergeInHdfs(String src, String dest,Configuration config) throws IllegalArgumentException, IOException {
+        FileSystem fs = FileSystem.get(config);
+        Path srcPath = new Path(src);
+        Path dstPath = new Path(dest);
+
+        // Check if the path already exists
+        if (!(fs.exists(srcPath))) {
+            return false;
+        }
+
+        if (!(fs.exists(dstPath))) {
+            return false;
+        }
+        return FileUtil.copyMerge(fs, srcPath, fs, dstPath, false, config, null);
     }
 }

@@ -1,89 +1,55 @@
 package assignment.task1;
 
+import labs.reducesidejoin.TextIntPair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Created by rafaelpossas on 4/20/16.
+ */
 public class PlaceTagReducer extends Reducer<Text,Text,Text,Text> {
-    private Map<String,Integer> localityTable = new HashMap<String, Integer>();
-
-
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
         int totalPhotos = 0;
-        String tags = "";
-        String years = "";
-        String places = "";
-        List<String> placesList = new ArrayList<String>();
+        for(Text value: values){
+            String[] valueArray = value.toString().split("\t");
+            String[] tagArray = valueArray[0].split(" ");
+            String[] years = valueArray[1].split(" ");
+            String[] places = valueArray[2].split(" ");
+            totalPhotos += Integer.parseInt(valueArray[3]);
+            Map<String,Integer> tagMap = new HashMap<String, Integer>();
+            for (String tag: tagArray){
+                try{
+                    if(!tag.trim().equals("")){
+                        String[] tagCount = tag.split(";");
+                        if(!ArrayUtils.contains(places,tagCount[0].toLowerCase()) && !ArrayUtils.contains(years,tagCount[0].toLowerCase())){
+                            tagMap.put(tagCount[0],Integer.parseInt(tagCount[1]));
+                        }
 
-        for (Text currentValue:values){
-            String[] tagDateArray = currentValue.toString().split("\t");
-            tags += tagDateArray[0]+" ";
-            String pictureYear = tagDateArray[1].substring(0,4);
-            String[] placesArray = tagDateArray[2].substring(1).split("/");
-            int placesLength = placesArray.length >3? 3: placesArray.length;
-            for (int i = 0; i<placesLength ; i++){
-                String placeTmp = placesArray[i].replace("+","").toLowerCase().trim();
-                if(!Utils.contains(placesList,placeTmp)){
-                    placesList.add(placeTmp);
-                }
-            }
-            if(years.indexOf(pictureYear) == -1)
-                years += pictureYear+" ";
-            totalPhotos++;
-        }
-        for (String placeTmp: placesList){
-
-            places+= placeTmp+" ";
-        }
-        localityTable.put(key.toString()+"\t"+tags+"\t"+years
-                +"\t"+places,totalPhotos);
-
-
-    }
-    @Override
-    protected void cleanup(Context context) throws IOException,InterruptedException{
-        Map<String, Integer> sortedMap = Utils.sortByValues(localityTable);
-        Map<String, Integer> tagTable;
-        int counter = 0;
-        for (String key : sortedMap.keySet()) {
-            tagTable = new HashMap<String, Integer>();
-            if (counter++ == 50) {
-                break;
-            }
-            String[] dataArray = key.split("\t");
-            String[] tags = dataArray[1].split(" ");
-            String[] years = dataArray[2].split(" ");
-            String[] locality = dataArray[3].split(" ");
-            String result = "";
-
-            for (String tag: tags){
-
-                if(!ArrayUtils.contains(locality,tag.toLowerCase()) && !ArrayUtils.contains(years,tag.toLowerCase())){
-                    Integer count = tagTable.get(tag);
-                    if(count!=null){
-                        tagTable.put(tag.toString(),++count);
-                    }else{
-                        tagTable.put(tag.toString(),1);
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
+
             }
-            Map<String, Integer> sortedTags = Utils.sortByValues(tagTable);
+            tagMap = Utils.sortByValues(tagMap);
+            String result = "";
             int count = 0;
-            for(String current_key: sortedTags.keySet()){
+
+            for(String tagKey: tagMap.keySet()){
                 if(count < 10){
-                    result+= current_key+":"+tagTable.get(current_key)+" ";
-                    count++;
+                    result+= tagKey+";"+tagMap.get(tagKey)+" ";
                 }else{
                     break;
                 }
-
+                count++;
             }
-            context.write(new Text(dataArray[0]+"\t"+sortedMap.get(key)),new Text(result));
+            context.write(new Text(key.toString()),new Text(totalPhotos+"\t"+result.toString()));
         }
     }
-
 }

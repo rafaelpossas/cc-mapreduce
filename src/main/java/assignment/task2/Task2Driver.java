@@ -1,6 +1,7 @@
 package assignment.task2;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -21,7 +22,6 @@ public class Task2Driver {
 
 
 
-        Path tmpFilterOut = new Path("place-type-filter"); // a temporary output path for the first job
 
         Job placeFilterJob = Job.getInstance(conf,"Task 2 - Place Mapper");
         placeFilterJob.setNumReduceTasks(0);
@@ -30,12 +30,13 @@ public class Task2Driver {
         placeFilterJob.setOutputKeyClass(Text.class);
         placeFilterJob.setOutputValueClass(Text.class);
         TextInputFormat.addInputPath(placeFilterJob, new Path(otherArgs[0]));
-        TextOutputFormat.setOutputPath(placeFilterJob, tmpFilterOut);
+        TextOutputFormat.setOutputPath(placeFilterJob, new Path("tmp/places"));
         placeFilterJob.waitForCompletion(true);
 
 
         Job joinJob = Job.getInstance(conf, "Task 2 - Country Reducer");
-        joinJob.addCacheFile(new Path("place-type-filter/part-m-00000").toUri());
+        joinJob.addCacheFile(new Path("tmp/places/part-m-00000").toUri());
+        joinJob.setNumReduceTasks(1);
         joinJob.setJarByClass(Task2Driver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
@@ -48,7 +49,7 @@ public class Task2Driver {
         TextOutputFormat.setOutputPath(joinJob, new Path(otherArgs[2]));
         joinJob.waitForCompletion(true);
         // remove the temporary path
-        //FileSystem.get(conf).delete(tmpFilterOut, true);
+        FileSystem.get(conf).delete(new Path("tmp"), true);
 
     }
 }
