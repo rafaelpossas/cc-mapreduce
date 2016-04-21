@@ -74,7 +74,12 @@ public class CountryLocalityReducer extends Reducer<Text, Text, Text, Text> {
                     neighbourhoodCountMap = new HashMap<String, Integer>();
                     for (String count : neighbourhoodCount) {
                         if (!count.equals("")) {
-                            neighbourhoodCountMap.put(count.split(":")[0], Integer.parseInt(count.split(":")[1]));
+                            try{
+                                neighbourhoodCountMap.put(count.split("<>")[0], Integer.parseInt(count.split("<>")[1]));
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
                         }
                     }
                     Map.Entry<String, Integer> topNeighbourhood = Utils.getMaxEntry(neighbourhoodCountMap);

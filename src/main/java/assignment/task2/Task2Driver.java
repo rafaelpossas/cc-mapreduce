@@ -36,7 +36,7 @@ public class Task2Driver {
 
         Job joinJob = Job.getInstance(conf, "Task 2 - Country Reducer");
         joinJob.addCacheFile(new Path("tmp/places/part-m-00000").toUri());
-        joinJob.setNumReduceTasks(1);
+        joinJob.setNumReduceTasks(10);
         joinJob.setJarByClass(Task2Driver.class);
         joinJob.setMapOutputKeyClass(Text.class);
         joinJob.setMapOutputValueClass(Text.class);
@@ -48,6 +48,8 @@ public class Task2Driver {
         joinJob.setReducerClass(CountryLocalityReducer.class);
         TextOutputFormat.setOutputPath(joinJob, new Path(otherArgs[2]));
         joinJob.waitForCompletion(true);
+
+
         // remove the temporary path
         FileSystem.get(conf).delete(new Path("tmp"), true);
 

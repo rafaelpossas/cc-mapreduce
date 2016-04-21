@@ -53,7 +53,7 @@ public class Utils {
             if(!result.equals("") && spacer.equals(""))
                 spacer = " ";
             if(!Utils.contains(countedNeighbourhoods,currentNeighbourhood) && !currentNeighbourhood.equals("")){
-                result+= spacer+currentNeighbourhood+":"+ StringUtils.countMatches(neighbourhood,currentNeighbourhood);
+                result+= spacer+currentNeighbourhood+"<>"+ StringUtils.countMatches(neighbourhood,currentNeighbourhood);
                 countedNeighbourhoods.add(currentNeighbourhood);
             }
 
